@@ -1,2 +1,2 @@
-# Lovetri
-Tetris implementation in Lua
+# Lovetris
+Tetris implementation in Lua/LOVE2D

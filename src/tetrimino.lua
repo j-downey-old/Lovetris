@@ -1,149 +1,47 @@
-SHP_I = {
-  {
-    {0, 0, 0, 0},
-    {1, 1, 1, 1},
-    {0, 0, 0, 0},
-    {0, 0, 0, 0}
-  },
-  {
-    {0, 0, 1, 0},
-    {0, 0, 1, 0},
-    {0, 0, 1, 0},
-    {0, 0, 1, 0}
-  },
-  {
-    {0, 0, 0, 0},
-    {0, 0, 0, 0},
-    {1, 1, 1, 1},
-    {0, 0, 0, 0}
-  },
-  {
-    {0, 1, 0, 0},
-    {0, 1, 0, 0},
-    {0, 1, 0, 0},
-    {0, 1, 0, 0}
-  }
-}
+local Tetrimino = {}
+Tetrimino.__index = Tetrimino
 
-SHP_O = {
-  {
-    {0, 1, 1, 0},
-    {0, 1, 1, 0},
-    {0, 0, 0, 0}
-  }
-}
+-- Constructor
 
-SHP_T = {
-  {
-    {0, 1, 0},
-    {1, 1, 1},
-    {0, 0, 0}
-  },
-  {
-    {0, 1, 0},
-    {0, 1, 1},
-    {0, 1, 0}
-  },
-  {
-    {0, 0, 0},
-    {1, 1, 1},
-    {0, 1, 0}
-  },
-  {
-    {0, 1, 0},
-    {1, 1, 0},
-    {0, 1, 0}
-  }
-}
+function Tetrimino.init(grid, color, blocks)
+  local vars = {}
+  setmetatable(vars, Tetrimino)
+  vars.grid   = grid
+  vars.color  = color
+  vars.blocks = blocks
+end
 
-SHP_S = {
-  {
-    {0, 1, 1},
-    {1, 1, 0},
-    {0, 0, 0}
-  },
-  {
-    {0, 1, 0},
-    {0, 1, 1},
-    {0, 0, 1}
-  },
-  {
-    {0, 0, 0},
-    {0, 1, 1},
-    {1, 1, 0}
-  },
-  {
-    {1, 0, 0},
-    {1, 1, 0},
-    {0, 1, 0}
-  }
-}
+-- LOVE functions
 
-SHP_Z = {
-  {
-    {1, 1, 0},
-    {0, 1, 1},
-    {0, 0, 0}
-  },
-  {
-    {0, 0, 1},
-    {0, 1, 1},
-    {0, 1, 0}
-  },
-  {
-    {0, 0, 0},
-    {1, 1, 0},
-    {0, 1, 1}
-  },
-  {
-    {0, 1, 0},
-    {1, 1, 0},
-    {1, 0, 0}
-  }
-}
+function Tetrimino:update(dt)
+end
 
-SHP_J = {
-  {
-    {0, 0, 1},
-    {1, 1, 1},
-    {0, 0, 0}
-  },
-  {
-    {0, 1, 0},
-    {0, 1, 0},
-    {0, 1, 1}
-  },
-  {
-    {0, 0, 0},
-    {1, 1, 1},
-    {1, 0, 0}
-  },
-  {
-    {1, 1, 0},
-    {0, 1, 0},
-    {0, 1, 0}
-  }
-}
+function Tetrimino:draw()
+end
 
-SHP_L = {
-  {
-    {1, 0, 0},
-    {1, 1, 1},
-    {0, 0, 0}
-  },
-  {
-    {0, 1, 1},
-    {0, 1, 0},
-    {0, 1, 0}
-  },
-  {
-    {0, 0, 0},
-    {1, 1, 1},
-    {0, 0, 1}
-  },
-  {
-    {0, 1, 0},
-    {0, 1, 0},
-    {1, 1, 0}
-  }
-}
+-- Get functions
+
+function Tetrimino:getColor()
+  return self.color
+end
+
+function Tetrimino:getBlocks()
+  return self.blocks
+end
+
+-- Set functions
+
+function Tetrimino:setColor(color)
+  self.color = color
+end
+
+function Tetrimino:setBlocks(blocks)
+  self.blocks = blocks
+end
+
+-- Diagnostic functions
+
+local function isBlockBelow(grid, x, y)
+end
+
+return Tetrimino

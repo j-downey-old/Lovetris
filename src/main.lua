@@ -1,309 +1,188 @@
--- World variables
-CELLSIZE = 16
-TICK = 0
-TICKRATE = 0.75
+-- TODO: Add tetrimino translations
+-- TODO: Add level/score functionality
 
--- Player variables
-HISCORE = 0
-SCORE   = 0
+require("tetrimino")
 
--- Board grid
+CONTROLS = {}
+    CONTROLS.MOVELEFT  = "left"
+    CONTROLS.MOVERIGHT = "right"
+    CONTROLS.ROTATE    = "up"
+    CONTROLS.ACCEL     = "down"
+
 GRID   = {}
 WIDTH  = 10
 HEIGHT = 22
 
--- Tetrimino shapes
-SHP_I = {
-    {
-        {0, 0, 0, 0},
-        {1, 1, 1, 1},
-        {0, 0, 0, 0},
-        {0, 0, 0, 0}
-    },
-    {
-        {0, 0, 1, 0},
-        {0, 0, 1, 0},
-        {0, 0, 1, 0},
-        {0, 0, 1, 0}
-    },
-    {
-        {0, 0, 0, 0},
-        {0, 0, 0, 0},
-        {1, 1, 1, 1},
-        {0, 0, 0, 0}
-    },
-    {
-        {0, 1, 0, 0},
-        {0, 1, 0, 0},
-        {0, 1, 0, 0},
-        {0, 1, 0, 0}
-    }
-}
+LEVEL      = 1
+SCORE      = 0
+SCORE_RATE = 2
+TICK       = 0
 
-SHP_O = {
-    {
-        {0, 1, 1, 0},
-        {0, 1, 1, 0},
-        {0, 0, 0, 0}
-    }
-}
+TYPES  = {SHP_I, SHP_O, SHP_T, SHP_S, SHP_Z, SHP_J, SHP_L}
+ACTIVE = false
+ROT    = 1
 
-SHP_T = {
-    {
-        {0, 1, 0},
-        {1, 1, 1},
-        {0, 0, 0}
-    },
-    {
-        {0, 1, 0},
-        {0, 1, 1},
-        {0, 1, 0}
-    },
-    {
-        {0, 0, 0},
-        {1, 1, 1},
-        {0, 1, 0}
-    },
-    {
-        {0, 1, 0},
-        {1, 1, 0},
-        {0, 1, 0}
-    }
-}
-
-SHP_S = {
-    {
-        {0, 1, 1},
-        {1, 1, 0},
-        {0, 0, 0}
-    },
-    {
-        {0, 1, 0},
-        {0, 1, 1},
-        {0, 0, 1}
-    },
-    {
-        {0, 0, 0},
-        {0, 1, 1},
-        {1, 1, 0}
-    },
-    {
-        {1, 0, 0},
-        {1, 1, 0},
-        {0, 1, 0}
-    }
-}
-
-SHP_Z = {
-    {
-        {1, 1, 0},
-        {0, 1, 1},
-        {0, 0, 0}
-    },
-    {
-        {0, 0, 1},
-        {0, 1, 1},
-        {0, 1, 0}
-    },
-    {
-        {0, 0, 0},
-        {1, 1, 0},
-        {0, 1, 1}
-    },
-    {
-        {0, 1, 0},
-        {1, 1, 0},
-        {1, 0, 0}
-    }
-}
-
-SHP_J = {
-    {
-        {0, 0, 1},
-        {1, 1, 1},
-        {0, 0, 0}
-    },
-    {
-        {0, 1, 0},
-        {0, 1, 0},
-        {0, 1, 1}
-    },
-    {
-        {0, 0, 0},
-        {1, 1, 1},
-        {1, 0, 0}
-    },
-    {
-        {1, 1, 0},
-        {0, 1, 0},
-        {0, 1, 0}
-    }
-}
-
-SHP_L = {
-    {
-        {1, 0, 0},
-        {1, 1, 1},
-        {0, 0, 0}
-    },
-    {
-        {0, 1, 1},
-        {0, 1, 0},
-        {0, 1, 0}
-    },
-    {
-        {0, 0, 0},
-        {1, 1, 1},
-        {0, 0, 1}
-    },
-    {
-        {0, 1, 0},
-        {0, 1, 0},
-        {1, 1, 0}
-    }
-}
-
--- Used in moving tetriminos
-ACCEL     = false
-ACCELRATE = 0
-ROT       = 1
-ACTIVE    = true
+FALL_RATE  = 0.75
+IS_ACCEL   = false
+ACCEL_RATE = 0.5
 
 function love.load()
-    BLK_BLU = love.graphics.newImage("assets/element_blue_square.png")
-    BLK_GRN = love.graphics.newImage("assets/element_green_square.png")
-    BLK_GRY = love.graphics.newImage("assets/element_grey_square.png")
-    BLK_PPL = love.graphics.newImage("assets/element_purple_square.png")
-    BLK_RED = love.graphics.newImage("assets/element_red_square.png")
-    BLK_YEL = love.graphics.newImage("assets/element_yellow_square.png")
-
-    -- Initialize grid to 10x22 zeroes
+    -- Initialize GRID to all empty blocks
     for y = 1, HEIGHT do
         GRID[y] = {}
         for x = 1, WIDTH do
-            GRID[y][x] = 0
+            GRID[y][x] = {block = nil, active = false}
         end
     end
 
-    -- Test blocks
-    GRID[1][5]   = {block = BLK_BLU, falling = true, active = true}
-    GRID[10][5]  = {block = BLK_RED, falling = true, active = false}
-    GRID[7][6]   = {block = BLK_PPL, falling = true, active = false}
-    GRID[15][7]  = {block = BLK_YEL, falling = true, active = false}
+    -- Spawn a new Tetrimino
+    math.randomseed(os.time())
+    spawnTetrimino(TYPES[math.random(1, #TYPES)])
+    ACTIVE = true
 end
 
 function love.update(dt)
-    ACCEL = love.keyboard.isDown("down")
-    if ACCEL then 
-        ACCELRATE = 0.50
-    else
-        ACCELRATE = 0
-    end
-
     TICK = TICK + dt
-    if TICK >= TICKRATE - ACCELRATE then
-        for y = HEIGHT, 1, -1 do
-            for x = WIDTH, 1, -1 do
-                if GRID[y][x] ~= 0 and y < HEIGHT then
-                    -- Current block is falling and space below is empty
-                    if GRID[y][x].falling and GRID[y + 1][x] == 0 then
-                        GRID[y + 1][x] = GRID[y][x]
-                        GRID[y][x] = 0
-                    -- Current block is falling and space is filled
-                    elseif GRID[y][x].falling then
-                        GRID[y][x].falling = false
-                        if GRID[y][x].active then GRID[y][x].active = false end
-                    end
-                -- Make falling field false for blocks on bottom row
-                elseif GRID[y][x] ~= 0 and GRID[y][x].falling then
-                    GRID[y][x].falling = false
-                    if GRID[y][x].active then GRID[y][x].active = false end
-                end
-            end
-        end
-        TICK = 0
-    end
+    if IS_ACCEL then TICK = TICK + ACCEL_RATE end
 
-    -- Check for complete rows
-    
+    if TICK >= FALL_RATE then
+        cascadeActive()
+        ACTIVE = false
+        checkActive()
+        full_lines = checkFullLines()
+        if full_lines ~= 0 then cascadeLines(full_lines) end
+        ACTIVE = true
+    end
 end
 
 function love.draw()
-    -- Draw grid
-    -- Draw blocks with the topmost two rows hidden
     for y = 3, HEIGHT do
         for x = 1, WIDTH do
-            if GRID[y][x] ~= 0 then
-                love.graphics.draw(GRID[y][x].block, x * CELLSIZE, 
-                                   y * CELLSIZE)
-            else
-                love.graphics.setColor(120, 120, 120)
-                love.graphics.rectangle('line', x * CELLSIZE, y * CELLSIZE,
-                                        CELLSIZE, CELLSIZE)
-                love.graphics.setColor(255, 255, 255)
+            if GRID[y][x].block then
+                love.graphics.draw(GRID[y][x].block, x * 16, y * 16)
             end
         end
     end
 end
 
 function love.keypressed(key)
-    love.keyboard.setKeyRepeat(true)
-    if key == "left" then moveTetrimino("left")
-    elseif key == "right" then moveTetrimino("right")
-    elseif key == "up" then rotateTetrimino() end
+    if key == CONTROLS.MOVELEFT      then moveTetrimino("left")
+    elseif key == CONTROLS.MOVERIGHT then moveTetrimino("right")
+    if key == CONTROLS.ROTATE then rotateTetrimino() end
+    if key == CONTROLS.ACCEL  then IS_ACCEL = true end
 end
 
-function createTetrimino(shape)
-end
-
-function moveTetrimino(dir)
-    -- Are the blocks able to move
-    can_move = true
-    -- Table of active blocks consisting of [1]: block info, [2]: y, [3]: x
-    active_blks = {}
-    -- The coeff and bound vars help with code reuse.
-    coeff = 1
-    bound = WIDTH
-    if dir == "left" then
-        coeff = -1
-        bound = 1
-    end
-
-    for y = 1, HEIGHT do
-        for x = 1, WIDTH do
-            if GRID[y][x] ~= 0 and GRID[y][x].active then
-                table.insert(active_blks, {GRID[y][x], y, x})
-                if x == bound or GRID[y][x + coeff] ~= 0 
-                   and not GRID[y][x + coeff].active then
-                    can_move = false
-                end
+-- Cascades active blocks if possible
+function cascadeActive()
+    to_move = {}
+    for y = HEIGHT - 1, 1, -1 do
+        for x = WIDTH, 1, -1 do
+            if GRID[y][x].active and GRID[y + 1][x].block then
+                return
             end
+            table.insert(to_move, {y, x})
         end
     end
 
-    -- Return if a move is not possible
-    if not can_move then return end
-
-    -- Removes all active blocks to move them
-    deleteActive()
-
-    -- (In/De)crement the x coordinates of active blocks
-    -- Add the blocks back to the grid
-    for i = 1, #active_blks do
-        active_blks[i][3] = active_blks[i][3] + coeff
-        GRID[active_blks[i][2]][active_blks[i][3]] = active_blks[i][1]
+    for i = 1, #to_move do
+        y = to_move[i][1]
+        x = to_move[i][2]
+        GRID[y + 1][x] = GRID[y][x]
+        GRID[y][x] = {block = nil, active = true}
     end
 end
 
-function rotateTetrimino()
+-- Checks if active blocks can't fall anymore 
+function checkActive()
+    for y = 1, HEIGHT do
+        for x = 1, WIDTH do
+            if GRID[y][x].active and not GRID[y + 1][x].active 
+               and GRID[y + 1][x].block then
+                deactivateActive()
+            end
+        end
+    end
 end
 
+-- Checks for any complete lines
+function checkFullLines()
+    full_count = 0
+    for y = 1, HEIGHT do
+        count = 0
+        for x = 1, WIDTH do
+            if GRID[y][x].block then
+                count = count + 1
+            end
+        end
+
+        if count == WIDTH then
+            full_count = full_count + 1
+        end 
+    end
+
+    return full_count
+end
+
+-- TODO: Complete this function
+-- Cascades all blocks if empty lines exist
+function cascadeLines()
+    empty_lines = {}
+    for y = 1, HEIGHT do
+        count = 0
+        for x = 1, WIDTH do
+            if GRID[y][x].block then count = count + 1 end 
+        end
+
+        if count == WIDTH then
+            empty_lines = empty_lines + 1
+            deleteLine(y)
+        end
+    end
+
+    for y = HEIGHT - 1, 1, -1 do
+        for x = WIDTH, 1, -1 do
+            GRID[y + empty_lines
+        end
+    end
+end
+
+-- Deletes a given line
+function deleteLine(y)
+    for x = 1, WIDTH do
+        GRID[y][x] = {block = nil, active = false}
+    end
+end
+
+-- Removes active attribute from currently active blocks
+function deactivateActive()
+    for y = 1, HEIGHT do
+        for x = 1, WIDTH do
+            if GRID[y][x].active then
+                GRID[y][x].active = false
+            end
+        end
+    end
+end
+
+-- Deletes currently active blocks
 function deleteActive()
     for y = 1, HEIGHT do
         for x = 1, WIDTH do
-            if GRID[y][x] ~= 0 and GRID[y][x].active then 
-                GRID[y][x] = 0
+            if GRID[y][x].active then
+                GRID[y][x] = {block = nil, active = false}
             end
         end
     end
+end
+
+-- Spawns a tetrimino of a given type
+function spawnTetrimino(type)
+end
+
+-- Moves the currently active tetrimino left or right
+function moveTetrimino(dir)
+end
+
+-- Rotates the currently active tetrimino
+function rotateTetrimino()
 end
